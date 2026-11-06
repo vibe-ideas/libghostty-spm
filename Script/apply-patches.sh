@@ -65,6 +65,11 @@ if grep -q "ghostty_surface_foreground_pid" "$SOURCE_DIR/include/ghostty.h"; the
     modern_host_io=true
 fi
 
+std_io=false
+if grep -Fq 'const Dir = std.Io.Dir;' "$SOURCE_DIR/src/os/TempDir.zig"; then
+    std_io=true
+fi
+
 host_io_applied=false
 if grep -q "GHOSTTY_SURFACE_IO_BACKEND_HOST_MANAGED" "$SOURCE_DIR/include/ghostty.h"; then
     host_io_applied=true
@@ -76,6 +81,7 @@ for patch_file in "$PATCH_DIR"/*; do
     patch_name=$(basename "$patch_file")
     case "$patch_name" in
         0002-host-managed-io.patch)
+            [ "$std_io" = false ] || continue
             [ "$modern_host_io" = false ] || continue
             if [ "$host_io_applied" = true ]; then
                 echo "[+] patch already applied: $patch_name"
@@ -84,9 +90,34 @@ for patch_file in "$PATCH_DIR"/*; do
             apply_unified_patch "$patch_file"
             ;;
         0002-host-managed-io-modern.patch)
+            [ "$std_io" = false ] || continue
             [ "$modern_host_io" = true ] || continue
             if [ "$host_io_applied" = true ]; then
                 echo "[+] patch already applied: $patch_name"
+                continue
+            fi
+            apply_unified_patch "$patch_file"
+            ;;
+        0002-host-managed-io-std-io.patch)
+            [ "$std_io" = true ] || continue
+            if [ "$host_io_applied" = true ]; then
+                echo "[+] patch already applied: $patch_name"
+                continue
+            fi
+            apply_unified_patch "$patch_file"
+            ;;
+        0003-prebuilt-framedata.patch)
+            [ "$std_io" = false ] || continue
+            apply_unified_patch "$patch_file"
+            ;;
+        0003-prebuilt-framedata-std-io.sh)
+            [ "$std_io" = true ] || continue
+            "$patch_file" "$SOURCE_DIR"
+            ;;
+        0011-close-retained-temp-directory-handles.patch)
+            # Ghostty 1.4 includes this fix with the std.Io directory API.
+            if [ "$std_io" = true ] && grep -Fq 'self.parent.close(global.io());' "$SOURCE_DIR/src/os/TempDir.zig"; then
+                echo "[+] upstream already closes retained directory handles"
                 continue
             fi
             apply_unified_patch "$patch_file"

@@ -7,7 +7,7 @@
 
 import Foundation
 import GhosttyKit
-import MSDisplayLink
+import DisplayLink
 
 /// Shared terminal state and logic used by both UIKit and AppKit views.
 ///
@@ -309,7 +309,7 @@ final class TerminalSurfaceCoordinator {
 
     // MARK: - Frame Rendering
 
-    func tick(context: DisplayLinkCallbackContext) {
+    func tick(context: DisplayLinkFrame) {
         guard shouldRenderFrame(at: context.timestamp) else {
             return
         }
@@ -407,7 +407,6 @@ final class TerminalSurfaceCoordinator {
             let timestamp = Self.monotonicTimestamp()
             tick(
                 context: .init(
-                    duration: 0,
                     timestamp: timestamp,
                     targetTimestamp: timestamp
                 )
@@ -443,7 +442,6 @@ final class TerminalSurfaceCoordinator {
         let timestamp = Self.monotonicTimestamp()
         tick(
             context: .init(
-                duration: 0,
                 timestamp: timestamp,
                 targetTimestamp: timestamp
             )

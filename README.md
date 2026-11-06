@@ -139,6 +139,26 @@ Manual releases require an explicit package version; scheduled releases only
 increment the package patch version when `main` is newer than the latest
 package tag.
 
+### ctty dependency baseline (2026-11-06)
+
+ctty builds Ghostty **1.4.0**, pinned at
+`83fb95624b0439ee660c2679b43b38c8b63769cd`, with Zig **0.17.0**.
+From the ctty root run `python3 -B scripts/build-ghostty.py` before resolving
+Swift packages. The production and local manifests consume that cached macOS
+XCFramework; the release template retains its published-binary placeholders.
+The helper supports host builds and `--universal` macOS builds. It does not
+produce iOS or arm64e release slices.
+
+Host-managed I/O, frame data, CoreText lifecycle and the split Metal device
+state are adapted to the new engine. The clipboard bridge uses 1.4's explicit
+byte lengths and callback signatures. Source packages keep their upstream Zig
+content hashes even when downloaded through the host proxy or original source
+archive URLs. Xcode 27 archives are combined with Zig's Darwin archiver.
+
+All three manifests require **DisplayLink 3.0.1** (repository name
+MSDisplayLink). ctty uses `DisplayLinkFrame` only as a timing value and keeps
+its existing event-driven rendering without constructing a display-link driver.
+
 ## Trimmed Build
 
 The bundled `libghostty` is a trimmed build optimized for sandboxed, embedded use on Apple platforms.

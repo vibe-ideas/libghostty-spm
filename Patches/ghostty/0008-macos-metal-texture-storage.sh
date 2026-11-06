@@ -4,23 +4,28 @@ set -euo pipefail
 
 SOURCE_DIR="${1:?Usage: $0 <ghostty-source-dir>}"
 METAL_ZIG="$SOURCE_DIR/src/renderer/Metal.zig"
+DEVICE_ZIG="$SOURCE_DIR/src/renderer/metal/Device.zig"
+if [ ! -f "$DEVICE_ZIG" ]; then
+    DEVICE_ZIG="$METAL_ZIG"
+fi
 
 if [ ! -f "$METAL_ZIG" ]; then
     echo "[-] Metal.zig not found"
     exit 1
 fi
 
-if grep -q 'LIBGHOSTTY_SPM_TEXTURE_STORAGE_PATCH' "$METAL_ZIG"; then
+if grep -q 'LIBGHOSTTY_SPM_TEXTURE_STORAGE_PATCH' "$DEVICE_ZIG"; then
     echo "[+] Metal texture storage already patched"
     exit 0
 fi
 
-python3 - "$METAL_ZIG" <<'PY'
+python3 - "$DEVICE_ZIG" "$METAL_ZIG" <<'PY'
 from pathlib import Path
 import sys
 
 path = Path(sys.argv[1])
 src = path.read_text()
+metal = Path(sys.argv[2])
 
 replacements = [
     (
@@ -81,31 +86,27 @@ for old, new in replacements:
         sys.exit(1)
     src = src.replace(old, new, 1)
 
-old_count = src.count(".storage_mode = self.default_storage_mode")
+render_src = src if path == metal else metal.read_text()
+owner = "self" if path == metal else "self.device"
+old_mode = f".storage_mode = {owner}.default_storage_mode"
+new_mode = f".storage_mode = {owner}.default_texture_storage_mode"
+old_count = render_src.count(old_mode)
 if old_count < 4:
     print("[-] expected texture storage call sites not found")
     sys.exit(1)
 
-src = src.replace(
-    ".storage_mode = self.default_storage_mode",
-    ".storage_mode = self.default_texture_storage_mode",
-)
+render_src = render_src.replace(old_mode, new_mode)
 
 buffer_marker = """pub inline fn bufferOptions(self: Metal) bufferpkg.Options {"""
-buffer_start = src.find(buffer_marker)
+buffer_start = render_src.find(buffer_marker)
 if buffer_start == -1:
     print("[-] bufferOptions not found")
     sys.exit(1)
 
-src = (
-    src[:buffer_start]
-    + src[buffer_start:].replace(
-        ".storage_mode = self.default_texture_storage_mode",
-        ".storage_mode = self.default_storage_mode",
-        1,
-    )
-)
+render_src = render_src[:buffer_start] + render_src[buffer_start:].replace(new_mode, old_mode, 1)
 
-path.write_text(src)
+if path != metal:
+    path.write_text(src)
+metal.write_text(render_src)
 print("[+] patched Metal.zig: split buffer and texture storage modes")
 PY

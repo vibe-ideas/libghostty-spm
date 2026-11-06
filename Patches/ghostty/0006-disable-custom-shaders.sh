@@ -67,6 +67,7 @@ print("[+] patched Config.zig")
 # ──────────────────────────────────────────────────────────────────────
 shared_path = source_dir / "src/build/SharedDeps.zig"
 text = shared_path.read_text()
+modern_module = 'step.root_module.linkLibrary' in text
 
 # Gate glslang — wrap with custom_shaders check
 text = text.replace(
@@ -121,6 +122,12 @@ text = text.replace(
     // Sentry""",
 )
 
+if modern_module:
+    # The Zig 0.17 build API moved linking onto root_module. Close the
+    # nested optional dependency expression independently of that API.
+    for following in ('Spirv-cross', 'Sentry'):
+        text = text.replace('\n    }\n\n    // ' + following,
+                            '\n    };\n\n    // ' + following, 1)
 shared_path.write_text(text)
 print("[+] patched SharedDeps.zig")
 

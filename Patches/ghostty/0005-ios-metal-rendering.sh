@@ -268,6 +268,11 @@ new_create = """        // On iOS the kqueue-based event loop used by the releas
 
         return .{"""
 
+modern_io = 'cf_release_thr.setName(global.io(), "cf_release")' in src
+if modern_io:
+    old_create = old_create.replace('setName("cf_release")', 'setName(global.io(), "cf_release")')
+    new_create = new_create.replace('setName("cf_release")', 'setName(global.io(), "cf_release")')
+
 if old_create not in src:
     print("[!] coretext CF release thread creation block not found")
     sys.exit(1)
@@ -335,6 +340,10 @@ new_end = """        // Offload to the background release thread when available.
         }
 
         for (items) |ref| macos.foundation.CFRelease(ref);"""
+
+if modern_io:
+    old_end = old_end.replace('mailbox.push(.{', 'mailbox.push(global.io(), .{')
+    new_end = new_end.replace('mailbox.push(.{', 'mailbox.push(global.io(), .{')
 
 if old_end not in src:
     print("[!] coretext endFrame mailbox block not found")
@@ -461,12 +470,12 @@ fi
 # =============================================================================
 BUILD_ZON="${SOURCE_DIR}/build.zig.zon"
 if [ -f "$BUILD_ZON" ]; then
-    if ! grep -q '7e7d2f2ab4700544657f8ec268715c8ef320d839' "$BUILD_ZON"; then
+    if grep -q 'libxev-34fa50878aec6e5fa8f532867001ab3c36fae23e' "$BUILD_ZON"; then
         sed -i '' 's|"https://deps.files.ghostty.org/libxev-34fa50878aec6e5fa8f532867001ab3c36fae23e.tar.gz"|"https://github.com/mitchellh/libxev/archive/7e7d2f2ab4700544657f8ec268715c8ef320d839.tar.gz"|' "$BUILD_ZON"
         sed -i '' 's|"libxev-0.0.0-86vtc4IcEwCqEYxEYoN_3KXmc6A9VLcm22aVImfvecYs"|"libxev-0.0.0-86vtcwE9EwB942iWRnaNMXHv3n0BeLAs_tVhrs5cT8cQ"|' "$BUILD_ZON"
         echo "[+] patched build.zig.zon: updated libxev for iOS mach port fix"
     else
-        echo "[+] libxev already updated"
+        echo "[+] keeping the upstream libxev revision"
     fi
 fi
 

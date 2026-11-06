@@ -94,7 +94,7 @@ rm -rf "$SOURCE_DIR/zig-out"
 
 ZIG_BUILD_COMMAND=(
     zig build
-    -Doptimize=${ZIG_OPTIMIZE:-ReleaseFast}
+    -Doptimize=${ZIG_OPTIMIZE:-fast}
     -Dapp-runtime=none
     -Demit-exe=false
     -Demit-xcframework=false
@@ -168,7 +168,7 @@ if [ "$IS_ARM64E" -eq 1 ]; then
     CORE_OBJECT="$LOCAL_CACHE_DIR/libghostty-arm64e-core.o"
     ARM64E_COMPAT_OBJECT="$LOCAL_CACHE_DIR/arm64e-compat.o"
 
-    xcrun libtool -static -no_warning_for_no_symbols -o "$RAW_ARCHIVE" "$LIBRARY_PATH" "$COMPAT_OBJECT"
+    zig ar qcsL --format=darwin "$RAW_ARCHIVE" "$LIBRARY_PATH" "$COMPAT_OBJECT"
     python3 "$ROOT_DIR/Script/convert-archive-arm64e.py" "$RAW_ARCHIVE" "$CONVERTED_ARCHIVE"
 
     xcrun --sdk "$APPLE_SDK" clang \
@@ -190,8 +190,7 @@ if [ "$IS_ARM64E" -eq 1 ]; then
         -c "$ROOT_DIR/Script/support/arm64e-compat.c" \
         -o "$ARM64E_COMPAT_OBJECT"
 
-    xcrun libtool -static -no_warning_for_no_symbols \
-        -o "$OUTPUT_DIR/lib/libghostty.a" \
+    zig ar qcsL --format=darwin "$OUTPUT_DIR/lib/libghostty.a" \
         "$CORE_OBJECT" \
         "$ARM64E_COMPAT_OBJECT"
 
@@ -254,8 +253,7 @@ else
         -I "$SOURCE_DIR/include" \
         -c "$ROOT_DIR/Script/support/arm64e-compat.c" \
         -o "$ARM64E_COMPAT_OBJECT"
-    xcrun libtool -static -no_warning_for_no_symbols \
-        -o "$OUTPUT_DIR/lib/libghostty.a" \
+    zig ar qcsL --format=darwin "$OUTPUT_DIR/lib/libghostty.a" \
         "$LIBRARY_PATH" \
         "$COMPAT_OBJECT" \
         "$ARM64E_COMPAT_OBJECT"

@@ -1,0 +1,18 @@
+[
+  {
+    "url": "https://codeload.github.com/sergot/zigimg/tar.gz/c701c9f99779d7ddf594dcc6da8f858fd277d61f",
+    "hash": "zigimg-0.1.0-8_eo2ri_FwBqF5UYiggLz4IGjHJO_n9-B6gT9Ayqg8G4"
+  },
+  {
+    "url": "https://codeload.github.com/jacobsandlund/uucode/tar.gz/ea62149739404a73c202b48a33bf6dd2af4bd9b0",
+    "hash": "uucode-0.2.0-ZZjBPoGFVgCiflJNFc6Io8xzC67B6PA5bUkk4LT0kCxg"
+  },
+  {
+    "url": "https://codeberg.org/ziglang/translate-c/archive/02ff0c523fb92a38939b04d0145c4a9602a74d56.tar.gz",
+    "hash": "translate_c-2.0.0-Q_BUWltOBwBYABF84EUL208pIFeUIwbBs29FmVBaafN5"
+  },
+  {
+    "url": "https://codeberg.org/ziglang/arocc/archive/d0c8c4d9c55daa7ef6e40cf0f630a5b5e900989b.tar.gz",
+    "hash": "aro-0.0.0-JSD1QtuBNwCASyBtNF3pqTl_W3oAJQGEVyFAtrBSE_Pa"
+  }
+]

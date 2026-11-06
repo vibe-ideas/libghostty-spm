@@ -76,8 +76,6 @@ public final class TerminalClipboardConfirmationRequest {
             .input,
             "clipboard confirm \(outcome) kind=\(kind) bytes=\(text.utf8.count)"
         )
-        text.withCString { cString in
-            TerminalClipboardIO.complete(surface, cString, state, true)
-        }
+        TerminalClipboardIO.complete(surface, text, state, true)
     }
 }

@@ -15,7 +15,7 @@ let package = Package(
         .library(name: "GhosttyTheme", targets: ["GhosttyTheme"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Lakr233/MSDisplayLink.git", from: "2.1.0"),
+        .package(url: "https://github.com/Lakr233/MSDisplayLink.git", from: "3.0.1"),
     ],
     targets: [
         .target(
@@ -29,7 +29,7 @@ let package = Package(
         ),
         .target(
             name: "GhosttyTerminal",
-            dependencies: ["GhosttyKit", "MSDisplayLink"],
+            dependencies: ["GhosttyKit", .product(name: "DisplayLink", package: "MSDisplayLink")],
             path: "Sources/GhosttyTerminal"
         ),
         .target(
