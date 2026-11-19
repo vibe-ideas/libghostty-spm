@@ -109,7 +109,7 @@
             _ = copySelectedTextToPasteboard()
         }
 
-        @IBAction func paste(_: Any?) {
+        @IBAction open func paste(_: Any?) {
             let pasteboard = NSPasteboard.general
             let text = TerminalPasteboard.string(from: pasteboard)
             if let text {
